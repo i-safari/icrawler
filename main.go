@@ -18,7 +18,7 @@ var (
 	tgBot   = flag.String("n", "", "Telegram bot api id")
 	tgID    = flag.Int64("g", 0, "Telegram chat id")
 	targets = flag.String("t", "./targets", "Targets file")
-	logfile = flag.String("l", "./iwatcher.log", "Log file")
+	logfile = flag.String("l", "./icrawler.log", "Log file")
 	outDir  = flag.String("o", "./files", "Output directory or store directory")
 	dbFile  = flag.String("d", "./instagram.db", "Instagram database")
 	uptime  = flag.Uint64("u", 5, "Update time in minutes")
