@@ -272,6 +272,9 @@ func (config PhotoConfig) values() (url.Values, error) {
 	if config.Caption != "" {
 		v.Add("caption", config.Caption)
 	}
+	if config.ParseMode != "" {
+		v.Add("parse_mode", config.ParseMode)
+	}
 	return v, nil
 }
 
@@ -461,6 +464,9 @@ func (config VideoConfig) params() (map[string]string, error) {
 
 	if config.Caption != "" {
 		params["caption"] = config.Caption
+	}
+	if config.ParseMode != "" {
+		params["parse_mode"] = config.ParseMode
 	}
 
 	return params, nil
