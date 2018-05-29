@@ -4,6 +4,11 @@ Instagram (night)crawler.
 ## Installation
 ```
 go get -u -v github.com/themester/icrawler
+go install github.com/themester/icrawler
+
+# Add $GOPATH/bin to $PATH env var in bashrc
+# Uncomment the following line.
+# echo 'PATH=$PATH:$GOPATH/bin/ export PATH' >> ~/.bashrc
 ```
 
 ## Update
