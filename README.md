@@ -8,23 +8,21 @@ go get -u -v github.com/themester/icrawler
 
 ## Update
 
-You can just use `go get -u` or execute `mk` at $GOPATH/src/github.com/themester/icrawler.
-
-[Download mk](https://github.com/9fans/plan9port)
+You can just use `go get -u -v github.com/themester/icrawler`.
 
 ## Usage
 
 After compile it you can start it using command parameters.
 
 ```bash
-$ /icrawler -h
-Usage of ./icrawler:
+$ icrawler -h
+Usage of icrawler:
   -d string
     	Instagram database (default "./instagram.db")
   -g int
     	Telegram chat id
   -l string
-    	Log file (default "./iwatcher.log")
+    	Log file (default "./icrawler.log")
   -n string
     	Telegram bot api id
   -o string
