@@ -3,6 +3,7 @@ package main
 import (
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 	"sync"
 
@@ -22,7 +23,7 @@ func (wc *watcherController) dump() {
 		log.Println("error opening targets file", err)
 		return
 	}
-	d := string(data)
+	d := b2s(data)
 
 	list := strings.Split(d, "\n")
 	if len(list[len(list)-1]) == 0 {
@@ -90,6 +91,10 @@ func (wc *watcherController) do(file string) {
 				wc.dump()
 			}
 			if event.Op&fsnotify.Remove == fsnotify.Remove {
+				if _, err := os.Stat(file); err != nil {
+					log.Printf("%s have been deleted. Closing fsnotify.", file)
+					return
+				}
 				err = watcher.Add(file)
 				if err != nil {
 					log.Println(err)
