@@ -19,7 +19,7 @@ var (
 	tgID    = flag.Int64("g", 0, "Telegram chat id")
 	targets = flag.String("t", "./targets", "Targets file")
 	logfile = flag.String("l", "./icrawler.log", "Log file")
-	outDir  = flag.String("o", "./files", "Output directory or store directory")
+	outDir  = flag.String("o", "./files", "Output directory or storing directory")
 	dbFile  = flag.String("d", "./instagram.db", "Instagram database")
 	uptime  = flag.Uint64("u", 5, "Update time in minutes")
 )
