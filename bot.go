@@ -14,26 +14,28 @@ func state(wc *watcherController, c *nConn) {
 
 	for _, name := range wc.list {
 		user, err := db.Get(name)
-		if err != nil {
+		if err != nil { // user does not exist in database
 			user, err = insta.Profiles.ByName(name)
 			if err != nil {
 				log.Printf("error getting profile of %s", name)
 				continue
 			}
 
+			// downloading user highlights
 			hlgts, err := user.Highlights()
 			if err != nil {
 				log.Println(err)
 			}
+			// using user gender to store highlights
 			user.Gender = len(hlgts)
 
+			// saving user
 			err = db.Put(user)
 			if err != nil {
-				log.Println(err)
+				log.Println("error saving user in database:", err)
 				continue
 			}
 
-			is := true
 			c.logger.Printf("Downloading highlights of %s (%d)\n", user.Username, user.ID)
 			for _, h := range hlgts {
 				output := path.Join(*outDir, strconv.FormatInt(user.ID, 10), "highlights", h.Title)
@@ -46,9 +48,10 @@ func state(wc *watcherController, c *nConn) {
 					}
 					to := imgs
 					if vds != "" {
+						// if item is a video is not an image. (xd)
 						to = vds
 					}
-					err = db.PutStory(user, &item, is, to)
+					err = db.PutStory(user, &item, true, to)
 					if err != nil {
 						log.Println(err)
 						continue iloop
@@ -56,6 +59,7 @@ func state(wc *watcherController, c *nConn) {
 					err = db.SetTitle(&item, h.Title)
 					if err != nil {
 						log.Println(err)
+						continue iloop
 					}
 					c.logger.Printf("Downloaded in %s\n", to)
 				}
@@ -65,6 +69,7 @@ func state(wc *watcherController, c *nConn) {
 
 			c.logger.Printf("Downloading feed media of %s (%d)\n", user.Username, user.ID)
 			for media.Next() {
+				// saving feed media in *outDir/{userid}/feed
 				output := path.Join(*outDir, strconv.FormatInt(user.ID, 10), "feed")
 				for _, item := range media.Items {
 					imgs, vds, err := item.Download(output, "")
@@ -83,6 +88,7 @@ func state(wc *watcherController, c *nConn) {
 					c.logger.Printf("Downloaded in %s\n", to)
 				}
 			}
+			continue
 		}
 
 		// getting new user strucure
@@ -92,6 +98,8 @@ func state(wc *watcherController, c *nConn) {
 			return
 		}
 
+		// checking all values.
+		// up is used to update database values
 		up := false
 		if nuser.Username != user.Username {
 			up = true
@@ -232,14 +240,11 @@ func state(wc *watcherController, c *nConn) {
 			if nuser.IsPrivate {
 				msg := "%s is private now. "
 				if !nuser.Friendship.Following {
-					msg += "And you don't follow this user"
+					msg += "And you doesn't follow this user"
 				}
 				log.Printf(msg, nuser.Username)
 			}
-			err = db.Update(nuser)
-			if err != nil {
-				log.Println(err)
-			}
+			up = true
 		}
 	end:
 		if up {
