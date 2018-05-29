@@ -77,7 +77,7 @@ func (db *dbConn) ReConn() {
 
 	db.conn, err = sql.Open("sqlite3", db.file)
 	if err != nil {
-		log.Println(err)
+		log.Printf("error opening databse: %s", err)
 	}
 }
 
@@ -85,7 +85,7 @@ func (db *dbConn) Create() {
 	for i := range schemas {
 		_, err := db.conn.Exec(schemas[i])
 		if err != nil {
-			log.Println(err)
+			log.Printf("error creating database: %s", err)
 		}
 	}
 }
@@ -104,7 +104,6 @@ func (db *dbConn) Get(name string) (*goinsta.User, error) {
 	if err == nil {
 		defer rows.Close()
 		if !rows.Next() {
-			log.Println(name, "does not exists")
 			return user, errNotFound
 		}
 		err = rows.Scan(
