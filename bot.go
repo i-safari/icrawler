@@ -31,7 +31,6 @@ func state(wc *watcherController, c *nConn) {
 			if err != gorm.ErrRecordNotFound {
 				log.Printf("error getting record: %s", err)
 			}
-			log.Println(name, "not found in db")
 			guser, err := insta.Profiles.ByName(name)
 			if err != nil {
 				log.Printf("error getting profile of %s", name)
