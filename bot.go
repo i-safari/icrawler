@@ -11,6 +11,16 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
+func init() {
+	db, err := gorm.Open("sqlite3", *dbFile)
+	if err != nil {
+		log.Println("error opening database: %s\n", err)
+		return
+	}
+	db.CreateTable(&User{}, &Feed{}, &Stories{})
+	db.Close()
+}
+
 func state(wc *watcherController, c *nConn) {
 	db, err := gorm.Open("sqlite3", *dbFile)
 	if err != nil {
@@ -20,13 +30,9 @@ func state(wc *watcherController, c *nConn) {
 	db.LogMode(false)
 	defer db.Close()
 
-	user := &User{}
-	feed := &Feed{}
-	story := &Stories{}
-	db.CreateTable(user, feed, story)
-
 	for _, name := range wc.list {
-		err := db.Where("username = ?", name).Find(user).Error
+		user := &User{Username: name}
+		err := db.Where(user).Find(user).Error
 		if err != nil { // user does not exist in database
 			if err != gorm.ErrRecordNotFound {
 				log.Printf("error getting record: %s", err)
@@ -42,7 +48,6 @@ func state(wc *watcherController, c *nConn) {
 			if err != nil {
 				log.Printf("error downloading %s highlights: %s", guser.Username, err)
 			}
-			// using user gender to store highlights
 			copyGuserToUser(guser, user)
 			user.Highlights = len(hlgts)
 
@@ -58,11 +63,13 @@ func state(wc *watcherController, c *nConn) {
 				output := path.Join(*outDir, strconv.FormatInt(guser.ID, 10), "highlights", h.Title)
 			iloop:
 				for _, item := range h.Items {
+					story := &Stories{}
 					imgs, vds, err := item.Download(output, "")
 					if err != nil {
 						log.Println(err)
 						continue iloop
 					}
+					// store highlight information
 					story.Title = h.Title
 					story.Path, story.Url = imgs, goinsta.GetBest(item.Images.Versions)
 					if vds != "" {
@@ -72,7 +79,7 @@ func state(wc *watcherController, c *nConn) {
 					story.Highlight = true
 					copyItemToStory(&item, story)
 
-					err = db.Save(story).Error
+					err = db.Create(story).Error
 					if err != nil {
 						log.Println(err)
 						continue iloop
@@ -88,6 +95,7 @@ func state(wc *watcherController, c *nConn) {
 				// saving feed media in *outDir/{userid}/feed
 				output := path.Join(*outDir, strconv.FormatInt(guser.ID, 10), "feed")
 				for _, item := range media.Items {
+					feed := &Feed{}
 					imgs, vds, err := item.Download(output, "")
 					if err != nil {
 						log.Println(err)
@@ -97,9 +105,10 @@ func state(wc *watcherController, c *nConn) {
 					if vds != "" {
 						feed.Path, feed.Url = vds, goinsta.GetBest(item.Videos)
 					}
+					fmt.Println(imgs, vds, feed.Path, feed.Url)
 
 					copyItemToFeed(&item, feed)
-					err = db.Save(feed).Error
+					err = db.Create(feed).Error
 					if err != nil {
 						log.Println(err)
 					}
@@ -181,12 +190,12 @@ func state(wc *watcherController, c *nConn) {
 				n = (n ^ -1) + 1
 				log.Printf("%s has deleted %d medias", user.Username, n)
 			}
-			gfeed := nguser.Feed(nil)
 
-			i := 0
+			i, gfeed := 0, nguser.Feed(nil)
 			for gfeed.Next() {
 				for _, item := range gfeed.Items {
 					i++
+					feed := &Feed{}
 					copyItemToFeed(&item, feed)
 					if !db.NewRecord(feed) {
 						continue
@@ -226,6 +235,7 @@ func state(wc *watcherController, c *nConn) {
 		for stories.Next() {
 		itemLoop:
 			for _, item := range stories.Items {
+				story := &Stories{}
 				copyItemToStory(&item, story)
 				if !db.NewRecord(item) {
 					continue
@@ -237,13 +247,11 @@ func state(wc *watcherController, c *nConn) {
 				if err != nil {
 					log.Println(err)
 					continue itemLoop
-					continue
 				}
 				story.Path, story.Url = imgs, goinsta.GetBest(item.Images.Versions)
 				if vds != "" {
 					v, story.Path, story.Url = true, vds, goinsta.GetBest(item.Videos)
 				}
-				story.Highlight = false
 
 				err = db.Save(story).Error
 				if err != nil {
