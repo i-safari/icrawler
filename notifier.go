@@ -93,7 +93,7 @@ type data struct {
 
 func (c *nConn) SendPhoto(caption, file string) {
 	data := Data{
-		Title: "Instagram bot notification",
+		Title: "Instagram Notification",
 		Body:  caption,
 	}
 
@@ -119,7 +119,7 @@ func (c *nConn) SendPhoto(caption, file string) {
 
 func (c *nConn) SendVideo(caption, file string) {
 	data := Data{
-		Title: "Instagram bot notification",
+		Title: "Instagram Notification",
 		Body:  caption,
 	}
 
