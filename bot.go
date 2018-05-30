@@ -159,8 +159,7 @@ func state(wc *watcherController, c *nConn) {
 			for _, item := range stories.Items {
 				story := &Stories{}
 				copyItemToStory(&item, story)
-				err = db.Where(story).Find(story).Error
-				if err == nil { // exists
+				if db.Where(story).Find(story).Error == nil { // exists
 					continue itemLoop
 				}
 
@@ -191,12 +190,13 @@ func state(wc *watcherController, c *nConn) {
 
 			i, gfeed := 0, nguser.Feed(nil)
 			for gfeed.Next() {
+			gitemLoop:
 				for _, item := range gfeed.Items {
 					i++
 					feed := &Feed{}
 					copyItemToFeed(&item, feed)
-					if !db.NewRecord(feed) {
-						continue
+					if db.Where(feed).Find(feed).Error == nil { // exists
+						continue gitemLoop
 					}
 					v := false
 
@@ -204,7 +204,7 @@ func state(wc *watcherController, c *nConn) {
 					if err != nil {
 						if err != errIsCarousel {
 							log.Printf("error downloading feed: %s\n", err)
-							continue
+							continue gitemLoop
 						}
 					}
 
