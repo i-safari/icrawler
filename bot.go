@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"path"
@@ -11,12 +12,17 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
+var (
+	errIsCarousel = errors.New("is carousel media")
+)
+
 func init() {
 	db, err := gorm.Open("sqlite3", *dbFile)
 	if err != nil {
 		log.Println("error opening database: %s\n", err)
 		return
 	}
+	db.LogMode(false)
 	db.CreateTable(&User{}, &Feed{}, &Stories{})
 	db.Close()
 }
@@ -60,31 +66,8 @@ func state(wc *watcherController, c *nConn) {
 
 			c.logger.Printf("Downloading highlights of %s (%d)\n", guser.Username, guser.ID)
 			for _, h := range hlgts {
-				output := path.Join(*outDir, strconv.FormatInt(guser.ID, 10), "highlights", h.Title)
-			iloop:
 				for _, item := range h.Items {
-					story := &Stories{}
-					imgs, vds, err := item.Download(output, "")
-					if err != nil {
-						log.Println(err)
-						continue iloop
-					}
-					// store highlight information
-					story.Title = h.Title
-					story.Path, story.Url = imgs, goinsta.GetBest(item.Images.Versions)
-					if vds != "" {
-						// if item is a video is not an image. (xd)
-						story.Path, story.Url = vds, goinsta.GetBest(item.Videos)
-					}
-					story.Highlight = true
-					copyItemToStory(&item, story)
-
-					err = db.Create(story).Error
-					if err != nil {
-						log.Println(err)
-						continue iloop
-					}
-					c.logger.Printf("Downloaded in %s\n", story.Path)
+					downloadAndStoreStory(db, &item, c, h.Title, guser, nil)
 				}
 			}
 
@@ -93,25 +76,14 @@ func state(wc *watcherController, c *nConn) {
 			c.logger.Printf("Downloading feed media of %s (%d)\n", guser.Username, guser.ID)
 			for media.Next() {
 				// saving feed media in *outDir/{userid}/feed
-				output := path.Join(*outDir, strconv.FormatInt(guser.ID, 10), "feed")
 				for _, item := range media.Items {
-					feed := &Feed{}
-					imgs, vds, err := item.Download(output, "")
+					_, err := downloadAndStoreFeed(db, &item, c, guser, nil)
 					if err != nil {
-						log.Println(err)
-						continue
+						if err != errIsCarousel {
+							log.Printf("error downloading feed media of %s: %s\n", guser.Username, err)
+							continue
+						}
 					}
-					feed.Path, feed.Url = imgs, goinsta.GetBest(item.Images.Versions)
-					if vds != "" {
-						feed.Path, feed.Url = vds, goinsta.GetBest(item.Videos)
-					}
-
-					copyItemToFeed(&item, feed)
-					err = db.Create(feed).Error
-					if err != nil {
-						log.Println(err)
-					}
-					c.logger.Printf("Downloaded in %s\n", feed.Path)
 				}
 			}
 		}
@@ -180,6 +152,33 @@ func state(wc *watcherController, c *nConn) {
 				log.Printf("%s stopped following %d users", user.Username, n)
 			}
 		}
+
+		stories := nguser.Stories()
+		for stories.Next() {
+		itemLoop:
+			for _, item := range stories.Items {
+				story := &Stories{}
+				copyItemToStory(&item, story)
+				err = db.Where(story).Find(story).Error
+				if err == nil { // exists
+					continue itemLoop
+				}
+
+				v, err := downloadAndStoreStory(db, &item, c, "", nguser, story)
+				if err != nil {
+					log.Printf("error downloading story: %s", err)
+					continue itemLoop
+				}
+
+				if v {
+					c.SendVideo(fmt.Sprintf("New story of %s", nguser.Username), story.Path)
+				} else {
+					c.SendPhoto(fmt.Sprintf("New story of %s", nguser.Username), story.Path)
+				}
+				c.logger.Printf("Downloaded in %s\n", story.Path)
+			}
+		}
+
 		// TODO: check deleted values
 		if n := nguser.MediaCount - user.Media; n != 0 {
 			up = true
@@ -201,20 +200,12 @@ func state(wc *watcherController, c *nConn) {
 					}
 					v := false
 
-					output := path.Join(*outDir, strconv.FormatInt(nguser.ID, 10), "feed")
-					imgs, vds, err := item.Download(output, "")
+					v, err := downloadAndStoreFeed(db, &item, c, nguser, feed)
 					if err != nil {
-						log.Println(err)
-						continue
-					}
-					feed.Path, feed.Url = imgs, goinsta.GetBest(item.Images.Versions)
-					if vds != "" {
-						v, feed.Path, feed.Url = true, vds, goinsta.GetBest(item.Videos)
-					}
-
-					err = db.Save(feed).Error
-					if err != nil {
-						log.Println(err)
+						if err != errIsCarousel {
+							log.Printf("error downloading feed: %s\n", err)
+							continue
+						}
 					}
 
 					if v {
@@ -227,43 +218,6 @@ func state(wc *watcherController, c *nConn) {
 				if n < i {
 					break
 				}
-			}
-		}
-
-		stories := nguser.Stories()
-		for stories.Next() {
-		itemLoop:
-			for _, item := range stories.Items {
-				story := &Stories{}
-				copyItemToStory(&item, story)
-				if !db.NewRecord(item) {
-					continue
-				}
-				v := false
-				output := path.Join(*outDir, strconv.FormatInt(nguser.ID, 10), "stories")
-
-				imgs, vds, err := item.Download(output, "")
-				if err != nil {
-					log.Println(err)
-					continue itemLoop
-				}
-				story.Path, story.Url = imgs, goinsta.GetBest(item.Images.Versions)
-				if vds != "" {
-					v, story.Path, story.Url = true, vds, goinsta.GetBest(item.Videos)
-				}
-
-				err = db.Save(story).Error
-				if err != nil {
-					log.Println(err)
-					continue itemLoop
-				}
-
-				if v {
-					c.SendVideo(fmt.Sprintf("New story of %s", nguser.Username), story.Path)
-				} else {
-					c.SendPhoto(fmt.Sprintf("New story of %s", nguser.Username), story.Path)
-				}
-				c.logger.Printf("Downloaded in %s\n", story.Path)
 			}
 		}
 
@@ -291,4 +245,63 @@ func state(wc *watcherController, c *nConn) {
 			}
 		}
 	}
+}
+
+func downloadAndStoreFeed(db *gorm.DB, item *goinsta.Item, c *nConn, guser *goinsta.User, feed *Feed) (bool, error) {
+	v, output := false, path.Join(*outDir, strconv.FormatInt(guser.ID, 10), "feed")
+	imgs, vds, err := item.Download(output, "")
+	if err != nil {
+		if len(item.CarouselMedia) == 0 {
+			return false, err
+		}
+		for i := range item.CarouselMedia {
+			v, err = downloadAndStoreFeed(db, &item.CarouselMedia[i], c, guser, feed)
+			if err != nil {
+				return v, fmt.Errorf("carousel media %d: %s", item.CarouselMedia[i].Pk, err)
+			}
+		}
+		return v, errIsCarousel
+	}
+	if feed == nil {
+		feed = &Feed{}
+	}
+
+	v, feed.Path, feed.Url = false, imgs, goinsta.GetBest(item.Images.Versions)
+	if vds != "" {
+		v, feed.Path, feed.Url = true, vds, goinsta.GetBest(item.Videos)
+	}
+
+	copyItemToFeed(item, feed)
+	err = db.Save(feed).Error
+	if err != nil {
+		return v, fmt.Errorf("failed creating highlight: %s\n", err)
+	}
+	c.logger.Printf("Downloaded in %s\n", feed.Path)
+	return v, nil
+}
+
+func downloadAndStoreStory(db *gorm.DB, item *goinsta.Item, c *nConn, title string, guser *goinsta.User, story *Stories) (bool, error) {
+	v, output := false, path.Join(*outDir, strconv.FormatInt(guser.ID, 10), "highlights", title)
+	imgs, vds, err := item.Download(output, "")
+	if err != nil {
+		return false, fmt.Errorf("error downloading item %d: %s\n", item.Pk, err)
+	}
+	if story == nil {
+		story = &Stories{}
+	}
+	story.Title = title
+	story.Path, story.Url = imgs, goinsta.GetBest(item.Images.Versions)
+	if vds != "" {
+		// if item is a video is not an image. (xd)
+		v, story.Path, story.Url = true, vds, goinsta.GetBest(item.Videos)
+	}
+	if title != "" {
+		story.Highlight = true
+	}
+	copyItemToStory(item, story)
+
+	// update actual value if exists
+	db.Save(story)
+	c.logger.Printf("Downloaded in %s\n", story.Path)
+	return v, nil
 }

@@ -108,7 +108,8 @@ func (c *nConn) SendPhoto(caption, file string) {
 				File:        file,
 				UseExisting: false,
 			},
-			Caption: bf.String(),
+			Caption:   bf.String(),
+			ParseMode: "html",
 		},
 	)
 	if err != nil {
@@ -133,7 +134,8 @@ func (c *nConn) SendVideo(caption, file string) {
 				File:        file,
 				UseExisting: false,
 			},
-			Caption: bf.String(),
+			Caption:   bf.String(),
+			ParseMode: "html",
 		},
 	)
 	if err != nil {
