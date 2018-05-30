@@ -105,7 +105,6 @@ func state(wc *watcherController, c *nConn) {
 					if vds != "" {
 						feed.Path, feed.Url = vds, goinsta.GetBest(item.Videos)
 					}
-					fmt.Println(imgs, vds, feed.Path, feed.Url)
 
 					copyItemToFeed(&item, feed)
 					err = db.Create(feed).Error
