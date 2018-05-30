@@ -50,7 +50,7 @@ func main() {
 	cron := gocron.Start()
 
 	log.Printf("Bot started\nWatching %v", wc.list)
-	state(&wc, conn)
+	go state(&wc, conn)
 
 	ch := make(chan os.Signal)
 	signal.Notify(ch, os.Interrupt)
