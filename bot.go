@@ -49,7 +49,7 @@ func state(wc *watcherController, c *nConn) {
 			// saving user
 			err = db.Create(user).Error
 			if err != nil {
-				log.Printf("error saving user in database: %s", err)
+				log.Printf("error saving %s in database: %s", name, err)
 				continue
 			}
 
@@ -280,7 +280,7 @@ func state(wc *watcherController, c *nConn) {
 			copyGuserToUser(nguser, user)
 			err = db.Save(user).Error
 			if err != nil {
-				log.Println(err)
+				log.Println("error updating database", err)
 			}
 		}
 	}
