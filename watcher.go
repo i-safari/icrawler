@@ -25,7 +25,6 @@ func (wc *watcherController) dump() {
 	}
 	d := b2s(data)
 
-	old := wc.list
 	list := strings.Split(d, "\n")
 	if len(list[len(list)-1]) == 0 {
 		list = list[:len(list)-1]
@@ -52,6 +51,7 @@ func (wc *watcherController) dump() {
 		}
 		log.Printf("%v added to the list\n", new)
 		if !nt { // reverse search
+			old := []string{}
 			for i := range wc.list {
 				dt := true //deleted
 			sloop:
@@ -65,8 +65,8 @@ func (wc *watcherController) dump() {
 					old = append(old, wc.list[i])
 				}
 			}
+			log.Printf("%v deleted to the list\n", old)
 		}
-		log.Printf("%v deleted to the list\n", old)
 	}
 
 	wc.locker.Lock()
