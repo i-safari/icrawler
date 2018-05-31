@@ -25,6 +25,7 @@ func (wc *watcherController) dump() {
 	}
 	d := b2s(data)
 
+	old := wc.list
 	list := strings.Split(d, "\n")
 	if len(list[len(list)-1]) == 0 {
 		list = list[:len(list)-1]
@@ -32,6 +33,7 @@ func (wc *watcherController) dump() {
 
 	if len(wc.list) != 0 {
 		nt := false
+		new := []string{}
 		for i := range list {
 			nw := true //new
 		nloop:
@@ -42,10 +44,13 @@ func (wc *watcherController) dump() {
 				}
 			}
 			if nw {
-				nt = true
-				log.Printf("%s added to the list", list[i])
+				if !nt {
+					nt = true
+				}
+				new = append(new, list[i])
 			}
 		}
+		log.Printf("%v added to the list\n", new)
 		if !nt { // reverse search
 			for i := range wc.list {
 				dt := true //deleted
@@ -57,10 +62,11 @@ func (wc *watcherController) dump() {
 					}
 				}
 				if dt {
-					log.Printf("%s deleted to the list", wc.list[i])
+					old = append(old, wc.list[i])
 				}
 			}
 		}
+		log.Printf("%v deleted to the list\n")
 	}
 
 	wc.locker.Lock()
