@@ -66,7 +66,7 @@ func (wc *watcherController) dump() {
 				}
 			}
 		}
-		log.Printf("%v deleted to the list\n")
+		log.Printf("%v deleted to the list\n", old)
 	}
 
 	wc.locker.Lock()
