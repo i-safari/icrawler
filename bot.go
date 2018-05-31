@@ -209,14 +209,35 @@ func state(wc *watcherController, c *nConn) {
 					}
 
 					if v {
-						c.SendVideo(fmt.Sprintf("New media of %s", nguser.Username), feed.Path)
+						c.SendVideo(fmt.Sprintf("New media of %s\n %s", nguser.Username, item.Caption.Text), feed.Path)
 					} else {
-						c.SendPhoto(fmt.Sprintf("New media of %s", nguser.Username), feed.Path)
+						c.SendPhoto(fmt.Sprintf("New media of %s\n %s", nguser.Username, item.Caption.Text), feed.Path)
 					}
 					c.logger.Printf("Downloaded in %s\n", feed.Path)
 				}
 				if n < i {
 					break
+				}
+			}
+		}
+
+		// downloading user highlights
+		hlgts, err := nguser.Highlights()
+		if err != nil {
+			log.Printf("error downloading %s highlights: %s", nguser.Username, err)
+			goto end
+		}
+		if n := len(hlgts) - user.Highlights; n != 0 {
+			if n > 0 {
+				log.Printf("%s has %d new highlights\n", nguser.Username, n)
+			} else {
+				n = (n ^ -1) + 1
+				log.Printf("%s deleted %d highlights\n", nguser.Username, n)
+			}
+			c.logger.Printf("Downloading highlights of %s (%d)\n", nguser.Username, nguser.ID)
+			for _, h := range hlgts {
+				for _, item := range h.Items {
+					downloadAndStoreStory(db, &item, c, h.Title, nguser, nil)
 				}
 			}
 		}
