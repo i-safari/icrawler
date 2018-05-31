@@ -137,10 +137,10 @@ func state(wc *watcherController, c *nConn) {
 		if n := nguser.FollowerCount - user.Followers; n != 0 {
 			up = true
 			if n > 0 {
-				log.Printf("%s has %d new follows", user.Username, n)
+				log.Printf("%s has %d new followers", user.Username, n)
 			} else {
 				n = (n ^ -1) + 1
-				log.Printf("%s has %d new unfollows", user.Username, n)
+				log.Printf("%s has %d unfollowers", user.Username, n)
 			}
 		}
 		if n := nguser.FollowingCount - user.Following; n != 0 {
