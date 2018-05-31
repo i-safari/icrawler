@@ -91,7 +91,7 @@ func state(wc *watcherController, c *nConn) {
 		// getting new user strucure
 		nguser, err := insta.Profiles.ByID(user.Id)
 		if err != nil {
-			log.Printf("error getting profile of %s (%d)", name, user.Id)
+			log.Printf("error getting profile of %s (%d): %s\n", name, user.Id, err)
 			return
 		}
 
