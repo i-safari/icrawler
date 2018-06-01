@@ -49,7 +49,9 @@ func (wc *watcherController) dump() {
 				new = append(new, list[i])
 			}
 		}
-		log.Printf("%v added to the list\n", new)
+		if len(new) != 0 {
+			log.Printf("%v added to the list\n", new)
+		}
 		if !nt { // reverse search
 			old := []string{}
 			for i := range wc.list {
@@ -65,7 +67,9 @@ func (wc *watcherController) dump() {
 					old = append(old, wc.list[i])
 				}
 			}
-			log.Printf("%v deleted to the list\n", old)
+			if len(old) != 0 {
+				log.Printf("%v deleted to the list\n", old)
+			}
 		}
 	}
 
