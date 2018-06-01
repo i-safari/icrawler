@@ -228,6 +228,7 @@ func state(wc *watcherController, c *nConn) {
 			goto end
 		}
 		if n := len(hlgts) - user.Highlights; n != 0 {
+			user.Highlights += n
 			if n > 0 {
 				log.Printf("%s has %d new highlights\n", nguser.Username, n)
 			} else {
