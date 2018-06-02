@@ -51,15 +51,18 @@ func (c *nConn) Write(b []byte) (int, error) {
 	defer bytebufferpool.Put(bf)
 	c.tmpl.Execute(bf, data)
 
+	if bf.Len() > 200 {
+		bf.B = append(bf.B[:197], "..."...)
+	}
 	_, err := c.bot.Send(
 		tg.MessageConfig{
 			BaseChat: tg.BaseChat{
 				ChatID:           *tgID,
 				ReplyToMessageID: 0,
 			},
-			Text:                  bf.String(),
+			Text: bf.String(),
 			DisableWebPagePreview: false,
-			ParseMode:             "html",
+			ParseMode:             tg.ModeHTML,
 		},
 	)
 	if err != nil {
@@ -101,6 +104,9 @@ func (c *nConn) SendPhoto(caption, file string) {
 	defer bytebufferpool.Put(bf)
 	c.tmpl.Execute(bf, data)
 
+	if bf.Len() > 200 {
+		bf.B = append(bf.B[:197], "..."...)
+	}
 	_, err := c.bot.Send(
 		tg.PhotoConfig{
 			BaseFile: tg.BaseFile{
@@ -109,11 +115,11 @@ func (c *nConn) SendPhoto(caption, file string) {
 				UseExisting: false,
 			},
 			Caption:   bf.String(),
-			ParseMode: "html",
+			ParseMode: tg.ModeHTML,
 		},
 	)
 	if err != nil {
-		log.Println(err)
+
 	}
 }
 
@@ -127,6 +133,9 @@ func (c *nConn) SendVideo(caption, file string) {
 	defer bytebufferpool.Put(bf)
 	c.tmpl.Execute(bf, data)
 
+	if bf.Len() > 200 {
+		bf.B = append(bf.B[:197], "..."...)
+	}
 	_, err := c.bot.Send(
 		tg.VideoConfig{
 			BaseFile: tg.BaseFile{
@@ -135,7 +144,7 @@ func (c *nConn) SendVideo(caption, file string) {
 				UseExisting: false,
 			},
 			Caption:   bf.String(),
-			ParseMode: "html",
+			ParseMode: tg.ModeHTML,
 		},
 	)
 	if err != nil {
