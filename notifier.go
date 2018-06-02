@@ -51,9 +51,6 @@ func (c *nConn) Write(b []byte) (int, error) {
 	defer bytebufferpool.Put(bf)
 	c.tmpl.Execute(bf, data)
 
-	if bf.Len() > 200 {
-		bf.B = append(bf.B[:197], "..."...)
-	}
 	_, err := c.bot.Send(
 		tg.MessageConfig{
 			BaseChat: tg.BaseChat{
