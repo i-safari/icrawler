@@ -217,12 +217,11 @@ func state(wc *watcherController, c *nConn) {
 
 		// TODO: check deleted values
 		if !target.m { // media
-			n := user.MediaCount
+			nn := user.MediaCount
 			if target.nm || user.IsPrivate {
-				n = user.Media
+				nn = user.Media
 			}
-			n -= nguser.MediaCount
-			if n != 0 {
+			if n := nguser.MediaCount - nn; n != 0 {
 				up = true
 				if n > 0 {
 					log.Printf("%s has %d new medias", user.Username, n)
@@ -251,6 +250,8 @@ func state(wc *watcherController, c *nConn) {
 							}
 						}
 						user.MediaCount++
+						user.Media++
+						nn++
 
 						if v {
 							c.SendVideo(fmt.Sprintf("New media of %s\n %s", nguser.Username, item.Caption.Text), feed.Path)
@@ -259,7 +260,7 @@ func state(wc *watcherController, c *nConn) {
 						}
 						c.logger.Printf("Downloaded in %s\n", feed.Path)
 					}
-					if nguser.MediaCount <= user.MediaCount {
+					if nguser.MediaCount <= nn {
 						break
 					}
 					time.Sleep(time.Second * 5)
