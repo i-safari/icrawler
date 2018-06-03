@@ -34,63 +34,32 @@ func (wc *watcherController) dump() {
 	d := b2s(data)
 
 	listv := strings.Split(d, "\n")
-	if len(listv[len(listv)-1]) == 0 {
-		listv = listv[:len(listv)-1]
-	}
-	// (f)ollowers
-	// follo(w)ing (m)edia (s)tory
-	// (p)rofile changes
-	list := make([]string, 0, len(listv))
-	for i := range listv {
-		list = append(list, strings.Split(listv[i], " ")[0])
-	}
 
-	if len(wc.list) != 0 {
-		nt := false
-		new := []string{}
-		for i := range list {
-			nw := true //new
-		nloop:
-			for n := range wc.list {
-				if list[i] == wc.list[n].name {
-					nw = false
-					break nloop
-				}
-			}
-			if nw {
-				if !nt {
-					nt = true
-				}
-				new = append(new, list[i])
-			}
-		}
-		if len(new) != 0 {
-			log.Printf("%v added to the list\n", new)
-		}
-		if !nt { // reverse search
-			old := []string{}
-			for i := range wc.list {
-				dt := true //deleted
-			sloop:
-				for n := range list {
-					if wc.list[i].name == list[n] {
-						dt = false
-						break sloop
-					}
-				}
-				if dt {
-					old = append(old, wc.list[i].name)
-				}
-			}
-			if len(old) != 0 {
-				log.Printf("%v deleted to the list\n", old)
-			}
-		}
-	}
-
+	msg1 := wc.getMsg()
 	wc.toOpts(listv)
+	msg2 := wc.getMsg()
 
 	msg := ""
+	list = strings.Split(msg2, "\n")
+floop:
+	for _, line := range strings.Split(msg1, "\n") {
+		for _, line2 := range list {
+			if strings.Split(line, " ")[0] == strings.Split(line2, " ")[0] {
+				if !strings.EqualFold(line, line2) {
+					msg += "+ " line2 + "\n"
+				}
+				continue floop
+			}
+		}
+		msg += "- " line + "\n"
+	}
+
+	log.Println(msg)
+}
+
+func (wc *watcherController) getMsg() {
+	msg := ""
+	wlist := wc.list
 	for _, user := range wc.list {
 		msg += user.name
 		if user.f {
@@ -116,15 +85,16 @@ func (wc *watcherController) dump() {
 		}
 		msg += "\n"
 	}
-	log.Println(msg)
+	return msg
 }
 
 // topOpts converts list ([]string) to slice of options
 func (wc *watcherController) toOpts(list []string) {
-	wlist := wc.list
-
 userLoop:
 	for _, user := range list {
+		if len(user) < 3 {
+			continue
+		}
 		o := opts{}
 		i := strings.IndexByte(user, ' ')
 		if i == -1 {
