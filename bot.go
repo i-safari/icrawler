@@ -92,6 +92,11 @@ func state(wc *watcherController, c *nConn) {
 						user.MediaCount++
 					}
 				}
+				db.Save(user)
+			}
+			if target.nm {
+				user.MediaCount = user.Media
+				db.Save(user)
 			}
 		}
 
@@ -213,8 +218,12 @@ func state(wc *watcherController, c *nConn) {
 
 		// TODO: check deleted values
 		if !target.m { // media
+			n := user.MediaCount
+			if target.nm {
+				n = user.Media
+			}
 			// user.MediaCount is the number of feed items in database
-			if n := nguser.MediaCount - user.MediaCount; n != 0 {
+			if n = nguser.MediaCount - n; n != 0 {
 				up = true
 				if n > 0 {
 					log.Printf("%s has %d new medias", user.Username, n)
@@ -234,7 +243,6 @@ func state(wc *watcherController, c *nConn) {
 						if db.Where(feed).Find(feed).Error == nil { // exists
 							continue gitemLoop
 						}
-						v := false
 
 						v, err := downloadAndStoreFeed(db, &item, c, nguser, feed)
 						if err != nil {

@@ -14,6 +14,7 @@ type opts struct {
 	f, w bool
 	m, s bool
 	p, h bool
+	nm   bool
 	name string
 }
 
@@ -106,6 +107,8 @@ userLoop:
 		o.name, user = user[0:i], user[i+1:]
 		for i = 0; i < len(user); i++ {
 			switch user[i] {
+			case ' ':
+				continue
 			case 'f':
 				o.f = true
 			case 'w':
@@ -118,6 +121,8 @@ userLoop:
 				o.h = true
 			case 'p':
 				o.p = true
+			case 'n':
+				o.nm = true
 			}
 		}
 		wlist = append(wlist, o)
