@@ -106,6 +106,7 @@ func state(wc *watcherController, c *nConn) {
 			log.Printf("error getting profile of %s (%d): %s\n", target.name, user.Id, err)
 			continue
 		}
+		c.logger.Printf("Getting profile of %s (%d)\n", target.name, user.Id)
 
 		// checking all values.
 		// up is used to update database values
