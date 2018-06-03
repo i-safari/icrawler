@@ -40,18 +40,19 @@ func (wc *watcherController) dump() {
 	msg2 := wc.getMsg()
 
 	msg := ""
-	list := strings.Split(msg2, "\n")
+	list := strings.Split(msg1, "\n")
 floop:
-	for _, line := range strings.Split(msg1, "\n") {
-		for _, line2 := range list {
+	for _, line2 := range strings.Split(msg2, "\n") {
+		for _, line1 := range list {
 			if strings.Split(line, " ")[0] == strings.Split(line2, " ")[0] {
 				if !strings.EqualFold(line, line2) {
+					msg += "- " + line1 + "\n"
 					msg += "+ " + line2 + "\n"
 				}
 				continue floop
 			}
 		}
-		msg += "- " + line + "\n"
+		msg += "+ " + line2 + "\n"
 	}
 
 	log.Println(msg)
