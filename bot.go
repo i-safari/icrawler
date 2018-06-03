@@ -220,8 +220,8 @@ func state(wc *watcherController, c *nConn) {
 			if target.nm || user.IsPrivate {
 				n = user.Media
 			}
-			// user.MediaCount is the number of feed items in database
-			if n = nguser.MediaCount - n; n != 0 {
+			n -= nguser.MediaCount
+			if n != 0 {
 				up = true
 				if n > 0 {
 					log.Printf("%s has %d new medias", user.Username, n)
