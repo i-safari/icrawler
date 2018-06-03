@@ -261,6 +261,7 @@ func state(wc *watcherController, c *nConn) {
 					if nguser.MediaCount <= user.MediaCount {
 						break
 					}
+					time.Sleep(time.Second * 5)
 				}
 			}
 		}
@@ -297,7 +298,6 @@ func state(wc *watcherController, c *nConn) {
 				log.Println("error updating database", err)
 			}
 		}
-		time.Sleep(time.Second * 10)
 	}
 }
 
