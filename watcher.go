@@ -55,7 +55,9 @@ floop:
 		msg += "+ " + line2 + "\n"
 	}
 
-	log.Println(msg)
+	if msg != "" {
+		log.Println(msg)
+	}
 }
 
 func (wc *watcherController) getMsg() string {

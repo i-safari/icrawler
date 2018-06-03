@@ -75,7 +75,7 @@ func state(wc *watcherController, c *nConn) {
 				db.Save(user)
 			}
 
-			if !target.m {
+			if !target.m && !target.nm {
 				media := guser.Feed(nil)
 
 				c.logger.Printf("Downloading feed media of %s (%d)\n", guser.Username, guser.ID)
@@ -92,10 +92,6 @@ func state(wc *watcherController, c *nConn) {
 						user.MediaCount++
 					}
 				}
-				db.Save(user)
-			}
-			if target.nm {
-				user.MediaCount = user.Media
 				db.Save(user)
 			}
 		}
@@ -300,6 +296,7 @@ func state(wc *watcherController, c *nConn) {
 				log.Println("error updating database", err)
 			}
 		}
+		time.Sleep(time.Second * 10)
 	}
 }
 

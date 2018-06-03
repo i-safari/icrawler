@@ -21,7 +21,7 @@ var (
 	logfile = flag.String("l", "./icrawler.log", "Log file")
 	outDir  = flag.String("o", "./files", "Output directory or storing directory")
 	dbFile  = flag.String("d", "./instagram.db", "Instagram database")
-	uptime  = flag.Uint64("u", 5, "Update time in minutes")
+	uptime  = flag.Uint64("u", 15, "Update time in minutes")
 )
 
 func init() {
