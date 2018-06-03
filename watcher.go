@@ -46,12 +46,12 @@ floop:
 		for _, line2 := range list {
 			if strings.Split(line, " ")[0] == strings.Split(line2, " ")[0] {
 				if !strings.EqualFold(line, line2) {
-					msg += "+ " line2 + "\n"
+					msg += "+ " + line2 + "\n"
 				}
 				continue floop
 			}
 		}
-		msg += "- " line + "\n"
+		msg += "- " + line + "\n"
 	}
 
 	log.Println(msg)
