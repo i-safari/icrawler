@@ -219,7 +219,7 @@ func state(wc *watcherController, c *nConn) {
 		// TODO: check deleted values
 		if !target.m { // media
 			n := user.MediaCount
-			if target.nm {
+			if target.nm || user.IsPrivate {
 				n = user.Media
 			}
 			// user.MediaCount is the number of feed items in database
