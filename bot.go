@@ -150,9 +150,9 @@ func state(wc *watcherController, c *nConn) {
 				}
 				msg := ""
 				if nguser.IsPrivate {
-					msg := "%s is private now. "
+					msg = "%s is private now. "
 				} else {
-					msg := "%s is public now. "
+					msg = "%s is public now. "
 				}
 				if !nguser.Friendship.Following {
 					msg += "And you doesn't follow this user"
@@ -225,7 +225,7 @@ func state(wc *watcherController, c *nConn) {
 					goto highLoop
 				}
 
-				i, gfeed := 0, nguser.Feed(nil)
+				gfeed := nguser.Feed(nil)
 				for gfeed.Next() {
 				gitemLoop:
 					for _, item := range gfeed.Items {

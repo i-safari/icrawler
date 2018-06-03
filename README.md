@@ -55,3 +55,14 @@ Targets file can be modified during bot running. You can just add new user execu
 ```bash
 $ echo 'my_girlfriend/boyfriend_profile' >> targets
 ```
+
+Any target of file can be followed by:
+- 'f': Does not store and send followers notification.
+- 'w': Does not store and send following notification.
+- 'm': Does not store and send media.
+- 's': Does not store and send stories.
+- 'p': Does not store and send profile changes.
+
+```
+elonmusk f w  # do not store followers and following
+```
