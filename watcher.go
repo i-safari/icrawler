@@ -44,8 +44,8 @@ func (wc *watcherController) dump() {
 floop:
 	for _, line2 := range strings.Split(msg2, "\n") {
 		for _, line1 := range list {
-			if strings.Split(line, " ")[0] == strings.Split(line2, " ")[0] {
-				if !strings.EqualFold(line, line2) {
+			if strings.Split(line1, " ")[0] == strings.Split(line2, " ")[0] {
+				if !strings.EqualFold(line1, line2) {
 					msg += "- " + line1 + "\n"
 					msg += "+ " + line2 + "\n"
 				}
