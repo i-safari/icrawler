@@ -89,6 +89,33 @@ func (wc *watcherController) dump() {
 	}
 
 	wc.toOpts(listv)
+
+	msg := ""
+	for _, user := range wc.list {
+		msg += user.name
+		if user.f {
+			msg += " !followers"
+		}
+		if user.w {
+			msg += " !following"
+		}
+		if user.m {
+			msg += " !media"
+		}
+		if user.s {
+			msg += " !stories"
+		}
+		if user.p {
+			msg += " !profile"
+		}
+		if user.h {
+			msg += " !highlights"
+		}
+		if user.nm {
+			msg += " only new media"
+		}
+		msg += "\n"
+	}
 }
 
 // topOpts converts list ([]string) to slice of options
