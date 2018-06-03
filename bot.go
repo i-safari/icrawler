@@ -138,7 +138,7 @@ func state(wc *watcherController, c *nConn) {
 			if nguser.PublicPhoneNumber != user.Phone {
 				up = true
 				if nguser.PublicPhoneNumber == "" {
-					log.Printf("%s deleted his/her phone number", nguser.Username)
+					log.Printf("%s deleted his/her phone number (%s)", nguser.Username, user.Phone)
 				} else {
 					log.Printf(
 						"%s changed phone number from '%s' to '%s'",
