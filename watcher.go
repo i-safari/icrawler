@@ -92,7 +92,7 @@ func (wc *watcherController) getMsg() string {
 
 // topOpts converts list ([]string) to slice of options
 func (wc *watcherController) toOpts(list []string) {
-	wlist := wc.list
+	wlist := wc.list[:0]
 userLoop:
 	for _, user := range list {
 		if len(user) < 3 {
