@@ -50,6 +50,7 @@ func state(wc *watcherController, c *nConn) {
 			}
 
 			// saving user
+			copyGuserToUser(guser, user)
 			err = db.Create(user).Error
 			if err != nil {
 				log.Printf("error saving %s in database: %s", target.name, err)
@@ -62,7 +63,6 @@ func state(wc *watcherController, c *nConn) {
 				if err != nil {
 					log.Printf("error downloading %s highlights: %s", guser.Username, err)
 				}
-				copyGuserToUser(guser, user)
 				user.Highlights = len(hlgts)
 
 				c.logger.Printf("Downloading highlights of %s (%d)\n", guser.Username, guser.ID)
