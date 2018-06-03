@@ -40,7 +40,7 @@ func (wc *watcherController) dump() {
 	msg2 := wc.getMsg()
 
 	msg := ""
-	list = strings.Split(msg2, "\n")
+	list := strings.Split(msg2, "\n")
 floop:
 	for _, line := range strings.Split(msg1, "\n") {
 		for _, line2 := range list {
@@ -57,9 +57,8 @@ floop:
 	log.Println(msg)
 }
 
-func (wc *watcherController) getMsg() {
+func (wc *watcherController) getMsg() string {
 	msg := ""
-	wlist := wc.list
 	for _, user := range wc.list {
 		msg += user.name
 		if user.f {
@@ -90,6 +89,7 @@ func (wc *watcherController) getMsg() {
 
 // topOpts converts list ([]string) to slice of options
 func (wc *watcherController) toOpts(list []string) {
+	wlist := wc.list
 userLoop:
 	for _, user := range list {
 		if len(user) < 3 {
