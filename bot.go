@@ -104,7 +104,7 @@ func state(wc *watcherController, c *nConn) {
 		nguser, err := insta.Profiles.ByID(user.Id)
 		if err != nil {
 			log.Printf("error getting profile of %s (%d): %s\n", target.name, user.Id, err)
-			return
+			continue
 		}
 
 		// checking all values.
