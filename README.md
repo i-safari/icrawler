@@ -62,6 +62,7 @@ Any target of file can be followed by:
 - 'm': Does not store and send media.
 - 's': Does not store and send stories.
 - 'p': Does not store and send profile changes.
+- 'h': Does not store and send highlights.
 
 ```
 elonmusk f w  # do not store followers and following
