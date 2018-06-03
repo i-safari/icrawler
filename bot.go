@@ -92,6 +92,7 @@ func state(wc *watcherController, c *nConn) {
 						}
 						user.MediaCount++
 					}
+					time.Sleep(time.Second * 5)
 				}
 				db.Save(user)
 			}
