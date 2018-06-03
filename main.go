@@ -49,7 +49,7 @@ func main() {
 	gocron.Every(*uptime).Minutes().Do(state, &wc, conn)
 	cron := gocron.Start()
 
-	log.Printf("Bot started\nWatching %v", wc.list)
+	log.Printf("Bot started\n")
 	go state(&wc, conn)
 
 	ch := make(chan os.Signal)

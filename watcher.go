@@ -116,6 +116,7 @@ func (wc *watcherController) dump() {
 		}
 		msg += "\n"
 	}
+	log.Println(msg)
 }
 
 // topOpts converts list ([]string) to slice of options
