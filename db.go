@@ -12,6 +12,7 @@ type User struct {
 	Email      string `gorm:"type:varchar(64)"`
 	Phone      string `gorm:"type:varchar(20)"`
 	Media      int
+	MediaCount int // objects in database
 	Followers  int
 	Following  int
 	Highlights int

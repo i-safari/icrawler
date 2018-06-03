@@ -10,8 +10,15 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+type opts struct {
+	f, w bool
+	m, s bool
+	p, h bool
+	name string
+}
+
 type watcherController struct {
-	list    []string
+	list    []opts
 	file    string
 	running bool
 	locker  sync.Mutex
@@ -25,9 +32,16 @@ func (wc *watcherController) dump() {
 	}
 	d := b2s(data)
 
-	list := strings.Split(d, "\n")
-	if len(list[len(list)-1]) == 0 {
-		list = list[:len(list)-1]
+	listv := strings.Split(d, "\n")
+	if len(listv[len(listv)-1]) == 0 {
+		listv = listv[:len(listv)-1]
+	}
+	// (f)ollowers
+	// follo(w)ing (m)edia (s)tory
+	// (p)rofile changes
+	list := make([]string, 0, len(listv))
+	for i := range listv {
+		list = append(list, strings.Split(listv[i], " ")[0])
 	}
 
 	if len(wc.list) != 0 {
@@ -37,7 +51,7 @@ func (wc *watcherController) dump() {
 			nw := true //new
 		nloop:
 			for n := range wc.list {
-				if list[i] == wc.list[n] {
+				if list[i] == wc.list[n].name {
 					nw = false
 					break nloop
 				}
@@ -58,13 +72,13 @@ func (wc *watcherController) dump() {
 				dt := true //deleted
 			sloop:
 				for n := range list {
-					if wc.list[i] == list[n] {
+					if wc.list[i].name == list[n] {
 						dt = false
 						break sloop
 					}
 				}
 				if dt {
-					old = append(old, wc.list[i])
+					old = append(old, wc.list[i].name)
 				}
 			}
 			if len(old) != 0 {
@@ -73,8 +87,44 @@ func (wc *watcherController) dump() {
 		}
 	}
 
+	wc.toOpts(listv)
+}
+
+// topOpts converts list ([]string) to slice of options
+func (wc *watcherController) toOpts(list []string) {
+	wlist := wc.list
+
+userLoop:
+	for _, user := range list {
+		o := opts{}
+		i := strings.IndexByte(user, ' ')
+		if i == -1 {
+			o.name = user
+			wlist = append(wlist, o)
+			continue userLoop
+		}
+		o.name, user = user[0:i], user[i+1:]
+		for i = 0; i < len(user); i++ {
+			switch user[i] {
+			case 'f':
+				o.f = true
+			case 'w':
+				o.w = true
+			case 'm':
+				o.m = true
+			case 's':
+				o.m = true
+			case 'h':
+				o.h = true
+			case 'p':
+				o.p = true
+			}
+		}
+		wlist = append(wlist, o)
+	}
+
 	wc.locker.Lock()
-	wc.list = append(wc.list[:0], list...)
+	wc.list = wlist
 	wc.locker.Unlock()
 }
 
