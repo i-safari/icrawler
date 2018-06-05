@@ -218,7 +218,7 @@ func state(wc *watcherController, c *nConn) {
 		// TODO: check deleted values
 		if !target.m { // media
 			nn := user.MediaCount
-			if target.nm {
+			if target.nm || user.IsPrivate {
 				nn = user.Media
 			}
 			if n := nguser.MediaCount - nn; n != 0 {
@@ -233,9 +233,14 @@ func state(wc *watcherController, c *nConn) {
 				}
 
 				gfeed := nguser.Feed(nil)
+			gfeedLoop:
 				for gfeed.Next() {
 				gitemLoop:
 					for _, item := range gfeed.Items {
+						if nguser.Media <= nn {
+							break gfeedLoop
+						}
+
 						feed := &Feed{}
 						copyItemToFeed(&item, feed)
 						if db.Where(feed).Find(feed).Error == nil { // exists
@@ -259,9 +264,6 @@ func state(wc *watcherController, c *nConn) {
 							c.SendPhoto(fmt.Sprintf("New media of %s\n %s", nguser.Username, item.Caption.Text), feed.Path)
 						}
 						c.logger.Printf("Downloaded in %s\n", feed.Path)
-					}
-					if nguser.MediaCount <= nn {
-						break
 					}
 					time.Sleep(time.Second * 5)
 				}
