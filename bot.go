@@ -218,7 +218,7 @@ func state(wc *watcherController, c *nConn) {
 		// TODO: check deleted values
 		if !target.m { // media
 			nn := user.MediaCount
-			if target.nm || user.IsPrivate {
+			if target.nm {
 				nn = user.Media
 			}
 			if n := nguser.MediaCount - nn; n != 0 {
