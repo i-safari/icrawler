@@ -237,7 +237,7 @@ func state(wc *watcherController, c *nConn) {
 				for gfeed.Next() {
 				gitemLoop:
 					for _, item := range gfeed.Items {
-						if nguser.MediaCount <= nn {
+						if nguser.MediaCount+len(gfeed.Items) <= nn {
 							break gfeedLoop
 						}
 
@@ -266,6 +266,12 @@ func state(wc *watcherController, c *nConn) {
 						c.logger.Printf("Downloaded in %s\n", feed.Path)
 					}
 					time.Sleep(time.Second * 5)
+				}
+				if user.MediaCount > nguser.MediaCount {
+					user.MediaCount = nguser.MediaCount
+				}
+				if user.Media > nguser.Media {
+					user.Media = nguser.MediaCount
 				}
 			}
 		}
