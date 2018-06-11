@@ -270,7 +270,7 @@ func state(wc *watcherController, c *nConn) {
 				if user.MediaCount > nguser.MediaCount {
 					user.MediaCount = nguser.MediaCount
 				}
-				if user.Media > nguser.Media {
+				if user.Media > nguser.MediaCount {
 					user.Media = nguser.MediaCount
 				}
 			}
