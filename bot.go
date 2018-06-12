@@ -46,6 +46,10 @@ func state(wc *watcherController, c *nConn) {
 			}
 			guser, err := insta.Profiles.ByName(target.name)
 			if err != nil {
+				if _, ok := err.(goinsta.Error503); ok {
+					log.Println("error 503 received")
+					return
+				}
 				log.Printf("error getting profile of %s", target.name)
 				continue
 			}
@@ -101,6 +105,10 @@ func state(wc *watcherController, c *nConn) {
 		// getting new user strucure
 		nguser, err := insta.Profiles.ByID(user.Id)
 		if err != nil {
+			if _, ok := err.(goinsta.Error503); ok {
+				log.Println("error 503 received")
+				return
+			}
 			log.Printf("error getting profile of %s (%d): %s\n", target.name, user.Id, err)
 			continue
 		}
@@ -280,6 +288,10 @@ func state(wc *watcherController, c *nConn) {
 			// downloading user highlights
 			hlgts, err := nguser.Highlights()
 			if err != nil {
+				if _, ok := err.(goinsta.Error503); ok {
+					log.Println("error 503 received")
+					return
+				}
 				log.Printf("error downloading %s highlights: %s", nguser.Username, err)
 				goto end
 			}
