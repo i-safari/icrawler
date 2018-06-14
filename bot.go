@@ -240,6 +240,10 @@ func state(wc *watcherController, c *nConn) {
 					goto highLoop
 				}
 
+				if nguser.IsPrivate {
+					user.Media = nguser.MediaCount
+				}
+
 				gfeed := nguser.Feed(nil)
 			gfeedLoop:
 				for gfeed.Next() {
