@@ -248,7 +248,7 @@ func state(wc *watcherController, c *nConn) {
 			gfeedLoop:
 				for gfeed.Next() {
 				gitemLoop:
-					for i, item := range gfeed.Items {
+					for _, item := range gfeed.Items {
 						if nguser.MediaCount <= nn {
 							break gfeedLoop
 						}
