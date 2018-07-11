@@ -225,6 +225,11 @@ func state(wc *watcherController, c *nConn) {
 
 		// TODO: check deleted values
 		if !target.media { // media
+			err = nguser.FriendShip()
+			if err != nil {
+				log.Println(err)
+				goto end
+			}
 			//if target.newMedia || user.IsPrivate {
 			//	dbMediaCount = user.Media
 			//}
@@ -245,7 +250,7 @@ func state(wc *watcherController, c *nConn) {
 				}
 
 				gfeed := nguser.Feed(nil)
-			//gfeedLoop:
+				//gfeedLoop:
 				for gfeed.Next() {
 				gitemLoop:
 					for _, item := range gfeed.Items {
