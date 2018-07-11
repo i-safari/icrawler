@@ -32,7 +32,7 @@ func init() {
 	if *tgBot == "" {
 		panic("tgbot must be specified")
 	}
-	os.MkdirAll(*outDir, 0777)
+	os.MkdirAll(*outDir, 0700)
 }
 
 func main() {

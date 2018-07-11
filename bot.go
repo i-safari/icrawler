@@ -62,7 +62,7 @@ func state(wc *watcherController, c *nConn) {
 				continue
 			}
 
-			if !target.h {
+			if !target.highlights {
 				// downloading user highlights
 				hlgts, err := guser.Highlights()
 				if err != nil {
@@ -80,7 +80,7 @@ func state(wc *watcherController, c *nConn) {
 				db.Save(user)
 			}
 
-			if !target.m && !target.nm {
+			if !target.media && !target.newMedia {
 				media := guser.Feed(nil)
 
 				c.logger.Printf("Downloading feed media of %s (%d)\n", guser.Username, guser.ID)
@@ -115,36 +115,36 @@ func state(wc *watcherController, c *nConn) {
 		c.logger.Printf("Getting profile of %s (%d)\n", target.name, user.Id)
 
 		// checking all values.
-		// up is used to update database values
-		up := false
-		if !target.p { // see profile
+		// mustUpdateDB is used to update database values
+		mustUpdateDB := false
+		if !target.profile { // see profile
 			if nguser.Username != user.Username {
-				up = true
+				mustUpdateDB = true
 				log.Printf("%s changed username to %s", user.Username, nguser.Username)
 			}
 			if nguser.FullName != user.FullName {
-				up = true
+				mustUpdateDB = true
 				log.Printf(
 					"%s changed fullname from '%s' to '%s'",
 					user.Username, user.FullName, nguser.FullName,
 				)
 			}
 			if nguser.Biography != user.Biography {
-				up = true
+				mustUpdateDB = true
 				log.Printf(
 					"%s changed biography from '%s' to '%s'",
 					user.Username, user.Biography, nguser.Biography,
 				)
 			}
 			if nguser.PublicEmail != user.Email {
-				up = true
+				mustUpdateDB = true
 				log.Printf(
 					"%s changed email from '%s' to '%s'",
 					user.Username, user.Email, nguser.PublicEmail,
 				)
 			}
 			if nguser.PublicPhoneNumber != user.Phone {
-				up = true
+				mustUpdateDB = true
 				if nguser.PublicPhoneNumber == "" {
 					log.Printf("%s deleted his/her phone number (%s)", nguser.Username, user.Phone)
 				} else {
@@ -170,12 +170,12 @@ func state(wc *watcherController, c *nConn) {
 					msg += "And you doesn't follow this user"
 				}
 				log.Printf(msg, nguser.Username)
-				up = true
+				mustUpdateDB = true
 			}
 		}
-		if !target.f { // followers
+		if !target.followers { // followers
 			if n := nguser.FollowerCount - user.Followers; n != 0 {
-				up = true
+				mustUpdateDB = true
 				if n > 0 {
 					log.Printf("%s has %d new followers", user.Username, n)
 				} else {
@@ -184,9 +184,9 @@ func state(wc *watcherController, c *nConn) {
 				}
 			}
 		}
-		if !target.w { // following
+		if !target.following { // following
 			if n := nguser.FollowingCount - user.Following; n != 0 {
-				up = true
+				mustUpdateDB = true
 				if n > 0 {
 					log.Printf("%s started following %d users", user.Username, n)
 				} else {
@@ -196,7 +196,7 @@ func state(wc *watcherController, c *nConn) {
 			}
 		}
 
-		if !target.s { // stories
+		if !target.stories { // stories
 			stories := nguser.Stories()
 			for stories.Next() {
 			itemLoop:
@@ -224,34 +224,34 @@ func state(wc *watcherController, c *nConn) {
 		}
 
 		// TODO: check deleted values
-		if !target.m { // media
-			nn := user.MediaCount
-			if target.nm || user.IsPrivate {
-				nn = user.Media
+		if !target.media { // media
+			//if target.newMedia || user.IsPrivate {
+			//	dbMediaCount = user.Media
+			//}
+			if nguser.IsPrivate && !nguser.Friendship.Following {
+				log.Printf("Profile of %s is private and you are not following it\n", nguser.Username)
+				goto end
 			}
-			if n := nguser.MediaCount - nn; n != 0 {
-				up = true
+			if n := nguser.MediaCount - user.Media; n != 0 {
+				mustUpdateDB = true
 				if n > 0 {
+					user.Media = nguser.MediaCount
 					log.Printf("%s has %d new medias", user.Username, n)
 				} else {
-					n = (n ^ -1) + 1
+					n = n * -1
 					log.Printf("%s deleted %d medias", user.Username, n)
-					user.MediaCount -= n
+					user.Media -= n
 					goto highLoop
 				}
 
-				if nguser.IsPrivate {
-					user.Media = nguser.MediaCount
-				}
-
 				gfeed := nguser.Feed(nil)
-			gfeedLoop:
+			//gfeedLoop:
 				for gfeed.Next() {
 				gitemLoop:
 					for _, item := range gfeed.Items {
-						if nguser.MediaCount <= nn {
-							break gfeedLoop
-						}
+						//if nguser.MediaCount <= dbMediaCount {
+						//	break gfeedLoop
+						//}
 
 						feed := &Feed{}
 						copyItemToFeed(&item, feed)
@@ -267,8 +267,6 @@ func state(wc *watcherController, c *nConn) {
 							}
 						}
 						user.MediaCount++
-						user.Media++
-						nn++
 
 						if v {
 							c.SendVideo(fmt.Sprintf("New media of %s\n %s", nguser.Username, item.Caption.Text), feed.Path)
@@ -279,16 +277,16 @@ func state(wc *watcherController, c *nConn) {
 					}
 					time.Sleep(time.Second * 5)
 				}
-				if user.MediaCount > nguser.MediaCount {
-					user.MediaCount = nguser.MediaCount
-				}
-				if user.Media > nguser.MediaCount {
-					user.Media = nguser.MediaCount
-				}
+				//if user.MediaCount > nguser.MediaCount {
+				//	user.MediaCount = nguser.MediaCount
+				//}
+				//if user.Media > nguser.MediaCount {
+				//	user.Media = nguser.MediaCount
+				//}
 			}
 		}
 	highLoop:
-		if !target.h { // highlights
+		if !target.highlights { // highlights
 			// downloading user highlights
 			hlgts, err := nguser.Highlights()
 			if err != nil {
@@ -300,7 +298,7 @@ func state(wc *watcherController, c *nConn) {
 				goto end
 			}
 			if n := len(hlgts) - user.Highlights; n != 0 {
-				up = true
+				mustUpdateDB = true
 				user.Highlights += n
 				if n > 0 {
 					log.Printf("%s has %d new highlights\n", nguser.Username, n)
@@ -318,7 +316,7 @@ func state(wc *watcherController, c *nConn) {
 		}
 
 	end:
-		if up {
+		if mustUpdateDB {
 			copyGuserToUser(nguser, user)
 			err = db.Save(user).Error
 			if err != nil {

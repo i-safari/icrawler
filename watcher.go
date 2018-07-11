@@ -11,11 +11,11 @@ import (
 )
 
 type opts struct {
-	f, w bool
-	m, s bool
-	p, h bool
-	nm   bool
-	name string
+	followers, following bool
+	media, stories       bool
+	profile, highlights  bool
+	newMedia             bool
+	name                 string
 }
 
 type watcherController struct {
@@ -64,25 +64,25 @@ func (wc *watcherController) getMsg() string {
 	msg := ""
 	for _, user := range wc.list {
 		msg += user.name
-		if user.f {
+		if user.followers {
 			msg += " !followers"
 		}
-		if user.w {
+		if user.following {
 			msg += " !following"
 		}
-		if user.m {
+		if user.media {
 			msg += " !media"
 		}
-		if user.s {
+		if user.stories {
 			msg += " !stories"
 		}
-		if user.p {
+		if user.profile {
 			msg += " !profile"
 		}
-		if user.h {
+		if user.highlights {
 			msg += " !highlights"
 		}
-		if user.nm {
+		if user.newMedia {
 			msg += " only new media"
 		}
 		msg += "\n"
@@ -111,19 +111,19 @@ userLoop:
 			case ' ':
 				continue
 			case 'f':
-				o.f = true
+				o.followers = true
 			case 'w':
-				o.w = true
+				o.following = true
 			case 'm':
-				o.m = true
+				o.media = true
 			case 's':
-				o.m = true
+				o.media = true
 			case 'h':
-				o.h = true
+				o.highlights = true
 			case 'p':
-				o.p = true
+				o.profile = true
 			case 'n':
-				o.nm = true
+				o.newMedia = true
 			}
 		}
 		wlist = append(wlist, o)
@@ -158,7 +158,7 @@ func (wc *watcherController) do(file string) {
 			}
 			if event.Op&fsnotify.Remove == fsnotify.Remove {
 				if _, err := os.Stat(file); err != nil {
-					log.Printf("%s have been deleted. Closing fsnotify.", file)
+					log.Printf("%stories have been deleted. Closing fsnotify.", file)
 					return
 				}
 				err = watcher.Add(file)
