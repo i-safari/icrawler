@@ -3,8 +3,8 @@ Instagram (night)crawler.
 
 ## Installation
 ```
-go get -u -v github.com/themester/icrawler
-go install github.com/themester/icrawler
+go get -u -v github.com/dgrr/icrawler
+go install github.com/dgrr/icrawler
 
 # Add $GOPATH/bin to $PATH env var in bashrc
 # Uncomment the following line.
@@ -13,7 +13,7 @@ go install github.com/themester/icrawler
 
 ## Update
 
-You can just use `go get -u -v github.com/themester/icrawler`.
+You can just use `go get -u -v github.com/dgrr/icrawler`.
 
 ## Usage
 
